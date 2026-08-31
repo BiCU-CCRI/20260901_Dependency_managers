@@ -1,5 +1,7 @@
 # Modern dependency managers, a hands-on tour
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/BiCU-CCRI/20260901_Package_managers_demo)
+
 A short (about 30 to 40 minute) tutorial that introduces "new" dependency and
 environment managers to researchers who currently use Conda or virtualenv. It
 runs entirely in a GitHub Codespace, so there is nothing to install on your own
@@ -124,9 +126,10 @@ pure-Python work, `renv` for R, and `pixi global` for your everyday CLI tools.
 
 ## Running this tutorial
 
-1. Open this repository in a GitHub Codespace (Code button, then Codespaces,
-   then create a codespace). The first build takes a few minutes because it
-   installs R and renv.
+1. Open this repository (`BiCU-CCRI/20260901_Package_managers_demo`) in a GitHub
+   Codespace: use the badge above, or the green Code button, then Codespaces,
+   then create a codespace on this branch. The first build takes a few minutes
+   because it installs R and renv.
 2. When the container is ready, open the exercises in order. Each is a short
    Markdown file with copy-paste commands and the output you should expect.
 
