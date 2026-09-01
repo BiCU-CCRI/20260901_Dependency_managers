@@ -30,7 +30,7 @@ cd /tmp
 cowsay -t "isolated tool on PATH"
 ```
 
-`cowsay` now works from any directory, but its dependencies live only in its own
+`cowsay` now works from any directory for this user, but its dependencies live only in its own
 environment. Nothing was added to your project or to a shared site-packages.
 
 ## 3. See what isolation actually means
@@ -40,7 +40,7 @@ pipx list
 ```
 
 Each tool is listed with its own environment. If tool A needs `click 7` and
-tool B needs `click 8`, both are fine here, because they never share an
+tool B needs `click 8`, both can coexist, because they do not share the same Python
 environment.
 
 ## 4. Run a tool once, without installing it
@@ -49,7 +49,7 @@ environment.
 pipx run pycowsay "run once, no install"
 ```
 
-`pipx run` builds a cached environment on first use and reuses it briefly, then
+`pipx run` builds or reuses a cached environment  for the application, and then
 cleans it up. Use this for something you need occasionally.
 
 ## 5. Upgrade and remove
@@ -62,12 +62,23 @@ pipx uninstall cowsay
 Removal is clean: the tool's whole environment and its command go away, with no
 guessing about shared packages.
 
+## Reproducibility note
+
+The ordinary `pipx install` workflow is designed primarily for isolation and
+convenience, not for recording a research project's dependencies. Current pipx
+also has manifest/lock workflows that can use PEP 751 `pylock.toml`, but those
+locks are explicit rather than something created by every normal install.
+
+Even when a global tool is pinned, if a research result depends on it, prefer to
+make it a project dependency so the project itself records the requirement.
+
 ## Takeaways
 
 - Use `pipx` for Python CLI tools you want available system-wide.
-- One isolated environment per tool means no dependency collisions.
+- One isolated environment per tool prevents Python dependency collisions.
 - `pipx run` is the install-free, one-off equivalent.
-- Note: `uv tool install` and `uvx` (from exercise 1) do the same job. If you
-  already use `uv`, you may not need pipx separately.
-- Limitation: PyPI and Python only. For Conda or bioinformatics tools, use the
-  next exercise.
+- `uv tool install` and `uvx` (from exercise 1) cover the same general use case;
+  if you already use `uv`, you may not need pipx separately.
+- Application-manager isolation is not the same as project reproducibility.
+- Limitation: Python applications only. For Conda/Bioconda tools, use the next
+  exercise.

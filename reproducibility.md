@@ -33,7 +33,7 @@ in git. Commit the manifest and the lockfile instead.
 | Tool | Commit to git | Git-ignore |
 | --- | --- | --- |
 | uv | `pyproject.toml`, `uv.lock`, `.python-version` | `.venv/` |
-| pixi | `pixi.toml` (or Pixi config in `pyproject.toml`), `pixi.lock` | `.pixi/` |
+| pixi | `pixi.toml` (or pixi config in `pyproject.toml`), `pixi.lock` | `.pixi/` |
 | renv | `renv.lock`, `.Rprofile`, `renv/activate.R`, `renv/settings.json` | `renv/library/` |
 
 `renv` writes its own `renv/.gitignore` so the library is excluded automatically.
@@ -123,12 +123,12 @@ In CI, do not silently rewrite a lockfile because a manifest changed. Each tool 
 
 ## HPC and offline systems
 
-- Pixi and uv install in user space. They install into your home directory and drops the tools into a project-local `.pixi` or `.venv`.
+- pixi and uv install in user space. They install into your home directory and drops the tools into a project-local `.pixi` or `.venv`.
 - Use `pixi install --frozen` on the cluster so a login node with a different
   network or clock cannot quietly change your versions.
 - Resolve/download on a login node when compute nodes have no network access.
 - uv supports offline installs from a primed cache (`uv sync --offline`).
-- For Pixi/Conda, keep package caches on suitable shared or scratch storage when
+- For pixi/Conda, keep package caches on suitable shared or scratch storage when
   home-directory quotas are small.
 - For renv on a cluster, configure a binary package repository (for example, [Posit Public
   Package Manager](https://packagemanager.posit.co/)) so `restore()` installs binaries instead of compiling, which

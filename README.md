@@ -38,7 +38,7 @@ built to fix:
   specifications, and recent versions also have additional lockfile support,
   but this is not the default workflow.
 
-Tools such as Pixi and uv are implemented in Rust and are designed around fast
+Tools such as pixi and uv are implemented in Rust and are designed around fast
 dependency resolution and automatically maintained project lockfiles. For research
 code, that lockfile is particularly valuable: it records the resolved
 dependency graph rather than just the dependencies you requested, making it
@@ -61,7 +61,7 @@ There are two main use cases:
 
 > [!NOTE]
 > These categories are not mutually exclusive: `uv` supports both through its
-> project commands and `uv tool`, while Pixi supports both through projects and
+> project commands and `uv tool`, while pixi supports both through projects and
 > `pixi global`.
 
 | Tool | Role | Ecosystem | Written in | Lockfile / reproducibility | Roughly replaces |
@@ -111,7 +111,7 @@ For comparison, the traditional tools are:
   dependencies are resolved with uv's resolver and coordinated with the
   Conda environment. One lockfile can hold resolutions for multiple declared
   platforms. Existing `environment.yml` files can be imported.
-- **Cons**: introduces a Pixi project model and manifest (`pixi.toml`, although
+- **Cons**: introduces a pixi project model and manifest (`pixi.toml`, although
   configuration can also live in `pyproject.toml`). The project is still
   evolving. Multi-platform locking does not make packages available on platforms
   where no compatible build exists.
@@ -150,7 +150,7 @@ For comparison, the traditional tools are:
 
 ### `pixi global`
 
-- **Pros**: the `conda/pipx`-style application manager built into Pixi. It can install
+- **Pros**: the `conda/pipx`-style application manager built into pixi. It can install
   command-line applications from the Conda ecosystem, including compiled and
   non-Python tools from `conda-forge`, `bioconda`, and other Conda channels into isolated environments and expose their commands on `PATH`. `pixi-global.toml` records the configured global environments.
 - **Cons**: the global manifest is not a project `pixi.lock`, and each global
@@ -288,5 +288,5 @@ The key rule is:
 - `reproducibility.md`: practices focused on reproducibility and portability
   (locks, target platforms, strict CI restores, HPC, and containers).
 - `limitations.md`: failure modes, symptoms, and workarounds.
-- `exercises/environment.yml`: a small sample Conda environment used by the Pixi
+- `exercises/environment.yml`: a small sample Conda environment used by the pixi
   import step in exercise 2.

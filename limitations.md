@@ -107,8 +107,8 @@ rather than the packages.
 ## conda-global
 
 - **Newer project.** It is less mature than long-established pipx and newer than
-  Pixi's global workflow.
-- **Requires Conda.** Unlike Pixi, it is a Conda plugin rather than a standalone
+  pixi's global workflow.
+- **Requires Conda.** Unlike pixi, it is a Conda plugin rather than a standalone
   environment manager.
 - **Manifest, not project lock.** `~/.conda/global.toml` records configured
   tools, but it should not replace a project lockfile when research results
