@@ -54,7 +54,7 @@ One page to run the session from. Keep it open in a split pane while you demo.
 | Python CLI app, user-global | `uv tool install tool` or `pipx install tool` |
 | Python CLI app, one-off | `uvx tool` or `pipx run tool` |
 | Conda/Bioconda CLI app, user-global | `pixi global install tool` or `conda global install tool` with conda-global |
-| Research-critical CLI app | put it in the project's uv/Pixi dependencies instead |
+| Research-critical CLI app | put it in the project's uv/pixi dependencies instead |
 
 `condax` is the older Conda application-manager implementation and is still
 worth recognizing, but it is not the preferred new setup.

@@ -98,5 +98,5 @@ Whatever the source, `renv::snapshot()` pins it in `renv.lock`.
 - Limitation: it manages R packages, not the R interpreter or system libraries.
   Pair it with `pixi` or a container when you also need to pin those.
 
-Commit `renv.lock` and the `.Rprofile` and `renv/activate.R` files. The
+Commit `renv.lock`, `.Rprofile`, `renv/activate.R`, and `renv/settings.json`. The
 `renv/library` directory is git-ignored automatically.

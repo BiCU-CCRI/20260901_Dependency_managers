@@ -49,8 +49,9 @@ environment.
 pipx run pycowsay "run once, no install"
 ```
 
-`pipx run` builds or reuses a cached environment  for the application, and then
-cleans it up. Use this for something you need occasionally.
+`pipx run` builds or reuses a cached environment for the application. The cache
+ is retained for later runs and expires after a period of inactivity. Use this for
+ something you need occasionally.
 
 ## 5. Upgrade and remove
 

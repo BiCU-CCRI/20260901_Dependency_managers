@@ -20,7 +20,7 @@ Reproducibility comes from the **lockfile**, not the manifest. A `requirements.t
 or an `environment.yml` with ranges (~manifest) **records intent**, **not** the **resolved result**, so
 two people can install "the same" environment and get different versions.
 
-Neither of these solve everything - The interpreter, target platform, native libraries, package availability, GPU
+Neither of these solves everything — the interpreter, target platform, native libraries, package availability, GPU
 stack, and container/OS layer can all matter too.
 
 **Rule of thumb**: commit both files, and let the tool rebuild from the lockfile.
@@ -103,13 +103,14 @@ In CI, do not silently rewrite a lockfile because a manifest changed. Each tool 
 | --- | --- | --- |
 | uv | `uv sync --locked` | use the committed `uv.lock` |
 | pixi | `pixi install --locked` | uses the current platform's entry from `pixi.lock` |
-| renv | `renv::restore(prompt = FALSE)` | run from the project directory |
+| renv | `renv::restore(clean = TRUE, prompt = FALSE)` | run from the project directory |
 | conda | create/install from an exact Conda lockfile | current Conda supports native lock workflows |
 
->[!NOTE]For application managers such as `uv tool`, `pipx`, `pixi global`, and
->`conda-global`, remember that isolation is not automatically the same as project
->reproducibility. If a research result depends on the application, prefer to make
->it a project dependency.
+ > [!NOTE]
+ > For application managers such as `uv tool`, `pipx`, `pixi global`, and
+ > `conda-global`, remember that isolation is not automatically the same as project
+ > reproducibility. If a research result depends on the application, prefer to make
+ > it a project dependency.
 
 >[!NOTE]
 >Current pipx also has explicit manifest and PEP 751 lock workflows, which can be
@@ -123,7 +124,7 @@ In CI, do not silently rewrite a lockfile because a manifest changed. Each tool 
 
 ## HPC and offline systems
 
-- pixi and uv install in user space. They install into your home directory and drops the tools into a project-local `.pixi` or `.venv`.
+- pixi and uv themselves install in user space; project dependencies are placed in project-local `.pixi` or `.venv` directories.
 - Use `pixi install --frozen` on the cluster so a login node with a different
   network or clock cannot quietly change your versions.
 - Resolve/download on a login node when compute nodes have no network access.

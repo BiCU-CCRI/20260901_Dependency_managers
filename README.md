@@ -185,7 +185,7 @@ For research work where **reproducibility and portability are the priority**:
 - **Pure Python project** — a package, script, or analysis whose dependencies
   all come from the Python packaging ecosystem: use `uv`.
 
-  Commit both `pyproject.toml` , `uv.lock`, and an appropriately specific Python version.
+  Commit `pyproject.toml`, `uv.lock`, and `.python-version` with an appropriately specific Python version.
 
 - **Project that needs compiled tools, system libraries, mixed languages, or
   Bioconda packages** — common in bioinformatics: use `pixi`.

@@ -47,7 +47,7 @@ pixi add samtools "python>=3.11" pysam
 ```
 
 This installs `samtools` (a compiled program), Python, and the Conda build of
-`pysam` into one project environment. The dependecies are resolved together.
+`pysam` into one project environment. The dependencies are resolved together.
 `conda` can do this too, but slowly; `pixi` resolves in parallel in Rust and
 writes `pixi.lock` at the same time.
 
@@ -74,8 +74,8 @@ activate step (similar to `uv run`).
 ## 4. Add another target platform
 
 A major portability feature is that one `pixi.lock` can contain resolutions for
-multiple declared platforms. The Codespace is Linux; add Intel macOS as a
-second target:
+multiple declared platforms. The Codespace is Linux; add Apple Silicon macOS as a
+second target (Intel macOS would have been just `osx-64` but it's [being deprecated](https://www.anaconda.com/blog/intel-mac-package-support-deprecation)):
 
 ```bash
 pixi workspace platform list
@@ -138,11 +138,11 @@ machine receives identical bytes.
 ## 8. Coming from Conda: import an existing environment
 
 If you already have an `environment.yml`, you do not have to start over. This
-repository ships a small one (make sure you are in `excercises` directory), so this step is runnable:
+repository ships a small one under `exercises/`, so this step is runnable:
 
 ```bash
 cd "$CODESPACE_VSCODE_FOLDER"        # the tutorial repo root in Codespaces
-pixi init /tmp/demo-import --import environment.yml
+pixi init /tmp/demo-import --import exercises/environment.yml
 cd /tmp/demo-import
 cat pixi.toml                        # channels and deps came from environment.yml
 pixi run samtools --version | head -n 1

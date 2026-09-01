@@ -6,12 +6,13 @@ rather than the packages.
 
 ## uv
 
-- **Non-Python software.** uv only reaches PyPI, so it cannot install compiled tools
-  such as `samtools`, `bwa`, or `bedtools`, nor R. Symptom: `uv add samtools`
-  finds nothing usable, and the command is not on your `PATH` afterwards.
-  Workaround: use pixi or Conda for those tools; keep uv for the pure-Python
-  layer, or let pixi manage PyPI packages for you via its `pypi-dependencies`.
-- **Source-only packages Python packages.** If a package has no prebuilt wheel
+- **Non-Python software.** uv manages Python packages from indexes, Git, URLs, and
+   local paths; it is not a general system package manager, so it cannot install
+   standalone tools such as `samtools`, `bwa`, or `bedtools`, nor R. Symptom:
+   `uv add samtools` finds nothing usable, and the command is not on your `PATH`
+   afterwards. Workaround: use pixi or Conda for those tools; keep uv for the
+   pure-Python layer, or let pixi manage PyPI packages via `pypi-dependencies`.
+- **Source-only Python packages.** If a package has no prebuilt wheel
   for your Python version or platform, uv builds it from source and needs build
   tools and development headers. Symptom: a build error mentioning `gcc`,
   `Python.h`, or a missing system library. Workaround: install the compiler and
