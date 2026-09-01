@@ -199,7 +199,7 @@ For comparison, the traditional tools are:
 
 ## Which one should I use?
 
-For research work where **reproducibility and transferability are the priority**:
+For research work where **reproducibility and portability are the priority**:
 
 - **Pure Python project*- — a package, script, or analysis whose dependencies
   all come from the Python packaging ecosystem: use `uv`.
@@ -302,7 +302,7 @@ program a project dependency and put it in the lockfile.**
 - `CHEATSHEET.md`: a one-page command reference and list of common gotchas and
   fixes. Keep it open while teaching.
 - `reproducibility.md`: tips and tricks focused on reproducibility and
-  transferability (lockfiles, cross-platform locks, CI, HPC, containers).
+  portability (lockfiles, cross-platform locks, CI, HPC, containers).
 - `limitations.md`: where each manager struggles or fails, with the symptom and
   a workaround. Worth reading before you commit to a tool for a project.
 - `environment.yml`: a small sample Conda environment used by the `pixi import`

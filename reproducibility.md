@@ -1,27 +1,28 @@
-# Reproducibility and transferability tips
+# Reproducibility and portability tips
 
 The whole reason to move past plain Conda and virtualenv is that the newer tools
-make an environment reproducible (the same versions every time) and transferable
+make an environment reproducible (the same versions every time) and portable
 (the same environment on your laptop, a colleague's machine, CI, and an HPC
 cluster). This page collects the practices that matter, with the exact commands.
 
-## The one idea that underpins everything: manifest versus lockfile
+## The one idea: manifest versus lockfile
 
 Every modern tool separates two files:
 
-- The manifest is what you asked for, usually version ranges. Examples:
-  `pyproject.toml` (uv), `pixi.toml` (pixi), the packages you install in R
-  (renv). It is short and human-edited.
-- The lockfile is what was actually resolved: the exact version and often a
-  hash of every package, including transitive dependencies. Examples: `uv.lock`,
-  `pixi.lock`, `renv.lock`. It is machine-written.
+- The **manifest** is what you asked for, usually version ranges. Examples:
+  `pyproject.toml` (`uv`), `pixi.toml` (`pixi`), the packages you install in R
+  (`renv`). It is short and **human-edited**.
+- The **lockfile** is what was actually resolved: the exact version and often a
+  hash of every package, including transitive dependencies. Examples: `uv.lock` (`uv`),
+  `pixi.lock` (`pixi.lock`), `renv.lock` (`renv`). It is **machine-written**.
 
-Reproducibility comes from the lockfile, not the manifest. A `requirements.txt`
-or an `environment.yml` with ranges records intent, not the resolved result, so
+Reproducibility comes from the **lockfile**, not the manifest. A `requirements.txt`
+or an `environment.yml` with ranges **records intent**, **not** the **resolved result**, so
 two people can install "the same" environment and get different versions.
-Rule of thumb: commit both files, and let the tool rebuild from the lockfile.
 
-## Commit the right files, ignore the rest
+**Rule of thumb**: commit both files, and let the tool rebuild from the lockfile.
+
+## Commit the right files (and ignore the rest)
 
 The environment directory itself is large, machine-specific, and never belongs
 in git. Commit the manifest and the lockfile instead.
@@ -32,29 +33,28 @@ in git. Commit the manifest and the lockfile instead.
 | pixi | `pixi.toml`, `pixi.lock` | `.pixi/` |
 | renv | `renv.lock`, `.Rprofile`, `renv/activate.R`, `renv/settings.json` | `renv/library/` |
 
-renv writes its own `renv/.gitignore` so the library is excluded automatically.
+`renv` writes its own `renv/.gitignore` so the library is excluded automatically.
 
 ## Pin the interpreter, not just the packages
 
 An environment is not reproducible if the Python or R version can drift. Pin it:
 
-- uv: `uv python pin 3.11` writes `.python-version`; `uv sync` then uses exactly
+- uv: `uv python pin 3.10.4` writes `.python-version`; `uv sync` then uses exactly
   that interpreter, downloading it if needed.
-- pixi: add the interpreter as a normal dependency, `pixi add "python=3.11"`, so
+- pixi: add the interpreter as a normal dependency, `pixi add "python=3.10.4"`, so
   it is captured in `pixi.lock` like everything else.
 - renv: `renv.lock` records the R version used. renv does not install R itself,
   so pair it with the system, a container, or pixi to pin the interpreter too.
 
-## Make locks transferable across platforms
+## Make lockfiles portable across platforms
 
-This is where the newer tools clearly beat Conda for research, where code
-routinely moves between a macOS laptop, a Linux cluster, and Linux CI.
+This is where the newer tools clearly beat Conda for research - when you need to move between devices (including CI, codespaces, etc.):
 
 - pixi solves for every platform you declare and stores all of them in one
   `pixi.lock`. Declare them once:
 
   ```bash
-  pixi workspace platform add linux-64 osx-arm64 osx-64 win-64
+  pixi workspace platform add linux-64 osx-arm64 win-64
   pixi install
   ```
 
@@ -70,22 +70,22 @@ routinely moves between a macOS laptop, a Linux cluster, and Linux CI.
   from source), so the lockfile transfers even though the installed artifacts
   differ per platform.
 
-## Fail loudly when the lock is stale (use in CI)
+## Fail loudly when the lock is stale
 
 In automation you want the build to error if someone changed the manifest but
 forgot to update the lockfile, rather than silently re-resolving to new
 versions. Each tool has a strict mode:
 
 - uv: `uv sync --locked` (error if `uv.lock` is out of date) or `uv sync --frozen`
-  (install exactly what is in the lock, never re-resolve). `uv lock --check`
+  (install from the lock as-is without checking the manifest). `uv lock --check`
   verifies without installing.
 - pixi: `pixi install --locked` (error if `pixi.lock` is out of sync with the
-  manifest) or `pixi install --frozen` (install from the lock as-is). These are
+  manifest) or `pixi install --frozen` (install from the lock as-is without checking the manifest). These are
   also settable via `PIXI_LOCKED=true` / `PIXI_FROZEN=true`.
 - renv: `renv::restore()` already installs strictly from the lockfile;
   `renv::status()` reports drift between the lockfile, the library, and the code.
 
-## Reproduce on a new machine: the single command
+## Reproduce on a new machine
 
 | Tool | Command | Notes |
 | --- | --- | --- |
@@ -98,15 +98,14 @@ versions. Each tool has a strict mode:
 ## Transferring to an HPC cluster
 
 - pixi needs no admin rights and no cluster-wide Conda install. It installs into
-  your home directory and drops the tools into a project-local `.pixi`, which
-  sidesteps the classic "I cannot modify the shared base environment" problem.
+  your home directory and drops the tools into a project-local `.pixi`.
 - Use `pixi install --frozen` on the cluster so a login node with a different
   network or clock cannot quietly change your versions.
 - uv can run fully offline once packages are cached (`uv sync --offline`), which
-  is useful on compute nodes without internet access. Prime the cache on a login
+  is useful on compute nodes without internet access. Create the cache on a login
   node first.
-- For renv on a cluster, configure a binary package repository (Posit Public
-  Package Manager) so `restore()` installs binaries instead of compiling, which
+- For renv on a cluster, configure a binary package repository (for example, [Posit Public
+  Package Manager](https://packagemanager.posit.co/)) so `restore()` installs binaries instead of compiling, which
   is far faster and avoids missing compiler issues.
 
 ## Date-pin for extra determinism
@@ -120,7 +119,7 @@ resolution deterministic, cap it to a date:
 Combined with a committed lockfile, this makes both the current build and any
 future re-resolution reproducible.
 
-## Containers are the outermost layer, not a replacement
+## Containers are the outermost layer
 
 A lockfile pins packages, but not the operating system, system libraries, or
 compilers. When you need that level of reproducibility (papers, pipelines,
@@ -130,14 +129,14 @@ regulated work), wrap the environment in a container:
   `uv sync --frozen` during the build, so the container is built from your
   committed lockfile. The lockfile inside the container is what makes it
   reproducible; a bare `pip install` in a Dockerfile is not.
-- On HPC, prefer Apptainer (formerly Singularity). It runs without root and is
+- On HPC, prefer Podman (or rootless Docker), or Apptainer (formerly Singularity). It runs without root and is
   the usual container runtime on shared clusters.
 - This layering is complementary: lockfile for package versions, container for
   the system around them.
 
 ## Migrating between tools
 
-You rarely need a clean break:
+Examples of how to migrate between tools:
 
 - Conda to pixi: `pixi init --import environment.yml` (see exercise 2).
 - pip to uv: `uv` reads an existing `requirements.txt` (`uv add -r requirements.txt`)
@@ -145,7 +144,7 @@ You rarely need a clean break:
 - Capturing pipx tools for a new machine: `pipx list --json > snap.json`, commit
   it, then `pipx install-all snap.json` elsewhere.
 
-## Where lockfiles stop, and what to reach for
+## Lockfiles are not everything
 
 Be honest about the limits so people trust the tooling:
 

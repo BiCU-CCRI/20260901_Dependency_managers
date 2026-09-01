@@ -1,7 +1,4 @@
-# Instructor cheat-sheet
-
-One page to run the session from. Commands on the left, the reason or the fix on
-the right. Keep this open in a split pane while you demo.
+# Cheat-sheet
 
 ## Install one-liners
 
