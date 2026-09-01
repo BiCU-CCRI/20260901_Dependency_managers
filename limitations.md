@@ -1,9 +1,7 @@
 # When these managers struggle: limitations and failure modes
 
 No tool covers every case. This page lists the situations where each manager
-does not work, is awkward, or fails outright, with the symptom you will see and
-a practical workaround. Knowing these up front saves an afternoon of debugging
-and helps you pick the right tool per task.
+does not work, is awkward, or fails outright.
 
 The pattern throughout: pick the tool that matches the ecosystem your software
 actually lives in, and drop to a container when the problem is the system layer
@@ -23,14 +21,14 @@ rather than the packages.
   `-dev` headers, wait for a wheel, or use a Conda build where the binary already
   exists.
 - Heavy native stacks (GPU PyTorch, CUDA, geospatial GDAL). These are solvable
-  with uv but need the correct extra index configured, and are fiddlier than the
+  with uv but need the correct extra index configured, and are trickier to assemble than the
   Conda equivalent. Workaround: follow uv's PyTorch/GPU index guide, or use pixi,
   where CUDA builds come from the channel directly.
-- Pre-1.0 churn. uv is still below version 1.0 and occasionally ships breaking
+- uv is still below version 1.0 and occasionally ships breaking
   changes between minor versions. Workaround: pin the uv version in CI rather
   than always installing latest.
 
-Optional one-minute demo of the boundary (safe to run live):
+Test to fail successfully:
 
 ```bash
 uv init /tmp/uv-limit && cd /tmp/uv-limit
@@ -44,20 +42,20 @@ because it is not a Python package. That is exactly the gap pixi fills.
 
 ## pixi
 
-- Apple Silicon plus bioconda. Many bioinformatics tools still ship only
+- Issues with Apple Silicon with bioconda. Many bioinformatics tools still ship only
   `linux-64` and `osx-64` builds, not native `osx-arm64` (Apple M-series).
   Symptom: on an M-series Mac, `pixi add minimap2` (or `bowtie2`, `blast`, and
   others) fails to solve for `osx-arm64` with a "no candidates were found"
   style error. Workaround: build an `osx-64` environment and run it under
   Rosetta, restrict the project to `linux-64` and develop in a Linux container
   or Codespace, or check whether a native build has since appeared. This is the
-  single most common pixi surprise for this audience.
+  most common pixi *issue*.
 - PyPI-only packages mixed with Conda ones. Packages not on any Conda channel go
   under `pypi-dependencies` (resolved by uv internally). Usually fine, but the
   Conda-to-PyPI name mapping can occasionally pick the wrong package, or a PyPI
   package can need a system library that the Conda side does not provide.
   Workaround: prefer the Conda build when a package exists on both, and move a
-  troublesome PyPI dependency into the Conda `dependencies` if a build exists.
+  problematic PyPI dependency into the Conda `dependencies` if a build exists.
 - Large lockfiles and git merge conflicts. A multi-platform `pixi.lock` is big,
   so two people editing dependencies can hit a lockfile conflict. Workaround: do
   not hand-merge the lock. Resolve the conflict in `pixi.toml`, then run
@@ -66,8 +64,6 @@ because it is not a Python package. That is exactly the gap pixi fills.
   build, so a hash pinned in an old lock can disappear. Workaround: for archival
   reproducibility, capture the environment in a container image, or mirror the
   critical packages.
-- Windows. Many bioinformatics Conda packages are Linux-only, so a Windows
-  target will not solve for them.
 
 ## pipx
 
@@ -84,7 +80,7 @@ because it is not a Python package. That is exactly the gap pixi fills.
 - System dependencies are not isolated. pipx isolates Python dependencies only.
   A CLI that shells out to a system binary or links a C library still needs that
   present on the machine. Workaround: install the system dependency separately,
-  or use a Conda-based tool manager (`pixi global`, condax) that isolates those
+  or use a Conda-based tool manager (`pixi global`, `condax`) that isolates those
   too.
 - No lockfile. pipx does not pin versions, so `pipx upgrade` can move a tool to a
   new release. Workaround: capture the set with `pipx list --json` and pin
@@ -108,7 +104,7 @@ because it is not a Python package. That is exactly the gap pixi fills.
   libxml2, libcurl, a JDK, and so on). Symptom: `renv::restore()` fails while
   compiling, with "configuration failed" or a "library not found" message. renv
   manages R packages, not the system libraries they link. Workaround: install
-  the system dependencies first (apt, or Conda/pixi), use a base image that has
+  the system dependencies first (pixi/Conda, or apt), use a base image that has
   them (for example the rocker images), or let pak install system requirements.
 - Old versions may be source-only. Restoring an exact older version often means a
   source build, because package repositories keep binaries only for current
@@ -124,19 +120,19 @@ because it is not a Python package. That is exactly the gap pixi fills.
 - Sources that vanish or rate-limit. A package archived from CRAN, or a GitHub
   repository that was deleted or hit an API rate limit, cannot be fetched.
   Symptom: `restore()` errors fetching a specific package. Workaround: set a
-  `GITHUB_PAT` to avoid GitHub rate limits, and vendor or mirror critical
+  `GITHUB_PAT` (personal access token) to avoid GitHub rate limits, and mirror critical
   packages for the long term.
 - Scope. renv does not manage R itself, Python bridged through reticulate, Java,
   or system configuration. Pair it with pixi or a container when those matter.
 
-## Cross-cutting limits that apply to all of them
+## Limits that apply to all of them
 
 - Lockfiles do not pin the system layer. They record package versions and
   hashes, not the operating system, glibc, compiler, or GPU driver. Two machines
   can install the identical locked packages and still behave differently.
-  Workaround: when that matters, wrap the environment in a container (Apptainer
+  Workaround: when that matters, wrap the environment in a container (Podman or Apptainer
   on HPC, Docker elsewhere) or use a whole-system manager such as Nix or Guix.
-- "Reproducible" depends on upstream staying available. Yanked, removed, or
+- "Reproducible" depends on upstream staying available. Removed, or
   re-uploaded packages break a restore even with a perfect lockfile. Workaround:
   for archival work, keep a built container image or a local package mirror, not
   just the lockfile.
@@ -144,7 +140,7 @@ because it is not a Python package. That is exactly the gap pixi fills.
   registries need credentials and network access that the default installers do
   not assume. Symptom: resolution or download failures behind a proxy.
   Workaround: configure the internal index and tokens explicitly per tool.
-- Air-gapped or offline compute nodes. Many HPC compute nodes have no internet,
+- Offline compute nodes. Many HPC compute nodes have no internet,
   so resolving or downloading on the node fails. Symptom: network timeouts during
   install on a compute node. Workaround: prime the cache on a login node, then
   install offline (for example `uv sync --offline`), or ship a container.
