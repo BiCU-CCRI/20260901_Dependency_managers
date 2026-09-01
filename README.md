@@ -1,6 +1,6 @@
 # Modern dependency managers, a hands-on tour
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/BiCU-CCRI/20260901_Package_managers_demo)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/BiCU-CCRI/20260901_Dependency_managers)
 
 A short tutorial that introduces modern dependency and environment managers with a focus on **reproducibility and portability**. It runs entirely in a GitHub Codespace, so there is nothing to install on your own machine.
 
