@@ -1,158 +1,199 @@
 # Reproducibility and portability tips
 
-The whole reason to move past plain Conda and virtualenv is that the newer tools
-make an environment reproducible (the same versions every time) and portable
-(the same environment on your laptop, a colleague's machine, CI, and an HPC
-cluster). This page collects the practices that matter, with the exact commands.
+The goal is not merely to isolate dependencies, but to make it practical to
+rebuild a research environment on another machine and to notice when that
+rebuild would require a new resolution.
 
-## The one idea: manifest versus lockfile
+## The core idea: manifest versus lockfile
 
-Every modern tool separates two files:
+A modern project usually separates two concepts:
 
-- The **manifest** is what you asked for, usually version ranges. Examples:
-  `pyproject.toml` (`uv`), `pixi.toml` (`pixi`), the packages you install in R
-  (`renv`). It is short and **human-edited**.
-- The **lockfile** is what was actually resolved: the exact version and often a
-  hash of every package, including transitive dependencies. Examples: `uv.lock` (`uv`),
-  `pixi.lock` (`pixi.lock`), `renv.lock` (`renv`). It is **machine-written**.
+- **Manifest**: what you requested, often including version ranges. Examples:
+  `pyproject.toml`, `pixi.toml`, and `environment.yml`.
+- **Lockfile**: the concrete dependency resolution, including transitive
+  dependencies and often hashes/build/source information. Examples: `uv.lock`,
+  `pixi.lock`, `renv.lock`, Conda lockfiles, and PEP 751 `pylock.toml`.
 
-Reproducibility comes from the **lockfile**, not the manifest. A `requirements.txt`
-or an `environment.yml` with ranges **records intent**, **not** the **resolved result**, so
-two people can install "the same" environment and get different versions.
+A lockfile is a major part of reproducibility, but it is not the whole system.
+The interpreter, target platform, native libraries, package availability, GPU
+stack, and container/OS layer can all matter too.
 
-**Rule of thumb**: commit both files, and let the tool rebuild from the lockfile.
-
-## Commit the right files (and ignore the rest)
-
-The environment directory itself is large, machine-specific, and never belongs
-in git. Commit the manifest and the lockfile instead.
+## Commit the right files, ignore the environment itself
 
 | Tool | Commit to git | Git-ignore |
 | --- | --- | --- |
 | uv | `pyproject.toml`, `uv.lock`, `.python-version` | `.venv/` |
-| pixi | `pixi.toml`, `pixi.lock` | `.pixi/` |
+| pixi | `pixi.toml` (or Pixi config in `pyproject.toml`), `pixi.lock` | `.pixi/` |
 | renv | `renv.lock`, `.Rprofile`, `renv/activate.R`, `renv/settings.json` | `renv/library/` |
 
-`renv` writes its own `renv/.gitignore` so the library is excluded automatically.
+Do not commit the materialized environment directory. Rebuild it from the
+committed specification instead.
 
-## Pin the interpreter, not just the packages
+## Pin the interpreter deliberately
 
-An environment is not reproducible if the Python or R version can drift. Pin it:
+Package versions alone are not enough if the interpreter drifts.
 
-- uv: `uv python pin 3.10.4` writes `.python-version`; `uv sync` then uses exactly
-  that interpreter, downloading it if needed.
-- pixi: add the interpreter as a normal dependency, `pixi add "python=3.10.4"`, so
-  it is captured in `pixi.lock` like everything else.
-- renv: `renv.lock` records the R version used. renv does not install R itself,
-  so pair it with the system, a container, or pixi to pin the interpreter too.
+- uv: `uv python pin 3.11` pins the 3.11 series, while an exact request such as
+  `uv python pin 3.11.13` is stronger when you need the same patch release.
+- Pixi: add Python or R as normal dependencies, for example
+  `pixi add "python=3.11.13"`, so the interpreter is part of the locked Conda
+  resolution.
+- renv: `renv.lock` records the R version used, but renv does not install R.
+  Pair it with Pixi, a container, or another runtime-management layer when the
+  exact R interpreter matters.
 
-## Make lockfiles portable across platforms
+## Make the lock portable across target platforms
 
-This is where the newer tools clearly beat Conda for research - when you need to move between devices (including CI, codespaces, etc.):
+Portability does **not** mean one binary artifact runs everywhere. It means the
+project has a pre-resolved, tested dependency solution for each platform you
+claim to support.
 
-- pixi solves for every platform you declare and stores all of them in one
-  `pixi.lock`. Declare them once:
+### Pixi
 
-  ```bash
-  pixi workspace platform add linux-64 osx-arm64 win-64
-  pixi install
-  ```
+Pixi resolves every declared target platform and stores those resolutions in one
+`pixi.lock`:
 
-  Now the same lockfile reproduces on all four, so a Mac user and a cluster
-  running Linux get matching, pre-resolved environments from the same commit.
+```bash
+pixi workspace platform add linux-64 osx-64
+pixi install
+```
 
-- uv produces a universal lockfile by default: a single `uv.lock` that captures
-  resolution across platforms and Python versions, so `uv sync` works on
-  whatever machine checks it out.
+Add only platforms you intend to support and test. If a Bioconda package has no
+build for `osx-arm64`, declaring that platform cannot make it available.
 
-- renv records package name, version, and source, which is platform-independent.
-  On `restore()`, renv fetches the right binary for the current OS (or builds
-  from source), so the lockfile transfers even though the installed artifacts
-  differ per platform.
+### uv
+
+uv produces a universal project lock that can encode conditional resolutions
+across supported Python versions and platforms. The selected wheel/artifact can
+still differ by operating system or architecture.
+
+### renv
+
+renv records package names, versions, and sources. A restore on another platform
+may download a different binary or compile from source, so native system
+requirements can still differ.
+
+### Conda
+
+Modern Conda can also create and consume exact multi-platform lockfiles. This is
+important context when comparing current Conda with Pixi: the main difference is
+in workflow and defaults, not that Conda is incapable of locking.
 
 ## Fail loudly when the lock is stale
 
-In automation you want the build to error if someone changed the manifest but
-forgot to update the lockfile, rather than silently re-resolving to new
-versions. Each tool has a strict mode:
+In CI, do not silently rewrite a lockfile because a manifest changed.
 
-- uv: `uv sync --locked` (error if `uv.lock` is out of date) or `uv sync --frozen`
-  (install from the lock as-is without checking the manifest). `uv lock --check`
-  verifies without installing.
-- pixi: `pixi install --locked` (error if `pixi.lock` is out of sync with the
-  manifest) or `pixi install --frozen` (install from the lock as-is without checking the manifest). These are
-  also settable via `PIXI_LOCKED=true` / `PIXI_FROZEN=true`.
-- renv: `renv::restore()` already installs strictly from the lockfile;
-  `renv::status()` reports drift between the lockfile, the library, and the code.
+- uv: `uv sync --locked`; `uv lock --check` verifies the lock without installing.
+  `--frozen` means use the lock as-is without checking freshness.
+- Pixi: `pixi install --locked`; `--frozen` uses the existing lock without
+  updating it.
+- renv: `renv::restore()` installs from the lock; `renv::status()` reports drift.
+
+A strict restore answers a valuable question: **does this exact commit already
+contain everything needed to rebuild its environment?**
 
 ## Reproduce on a new machine
 
-| Tool | Command | Notes |
+| Tool | Typical command | Notes |
 | --- | --- | --- |
-| uv | `uv sync` | add `--locked` in CI |
-| pixi | `pixi install` | add `--locked` in CI |
-| renv | `renv::restore(prompt = FALSE)` | run in the project directory |
-| pipx | `pipx install-all snap.json` | after `pipx list --json > snap.json` |
-| conda (baseline) | `conda env create -f environment.yml` | no exact lock, versions may drift |
+| uv | `uv sync --locked` | use the committed `uv.lock` |
+| pixi | `pixi install --locked` | uses the current platform's entry from `pixi.lock` |
+| renv | `renv::restore(prompt = FALSE)` | run from the project directory |
+| conda | create/install from an exact Conda lockfile | current Conda supports native lock workflows |
 
-## Transferring to an HPC cluster
+For application managers such as `uv tool`, `pipx`, `pixi global`, and
+`conda-global`, remember that isolation is not automatically the same as project
+reproducibility. If a research result depends on the application, prefer to make
+it a project dependency.
 
-- pixi needs no admin rights and no cluster-wide Conda install. It installs into
-  your home directory and drops the tools into a project-local `.pixi`.
-- Use `pixi install --frozen` on the cluster so a login node with a different
-  network or clock cannot quietly change your versions.
-- uv can run fully offline once packages are cached (`uv sync --offline`), which
-  is useful on compute nodes without internet access. Create the cache on a login
-  node first.
-- For renv on a cluster, configure a binary package repository (for example, [Posit Public
-  Package Manager](https://packagemanager.posit.co/)) so `restore()` installs binaries instead of compiling, which
-  is far faster and avoids missing compiler issues.
+Current pipx also has explicit manifest and PEP 751 lock workflows, which can be
+useful for reproducing a personal set of Python CLI applications. That still does
+not make those tools part of a research project's own dependency graph unless
+the project records them.
 
-## Date-pin for extra determinism
+## HPC and offline systems
 
-Even a lockfile can be regenerated with newer packages later. To make a fresh
-resolution deterministic, cap it to a date:
+- Pixi and uv install in user space; they do not require a shared cluster-wide
+  environment to be writable.
+- Resolve/download on a login node when compute nodes have no network access.
+- uv supports offline installs from a primed cache (`uv sync --offline`).
+- For Pixi/Conda, keep package caches on suitable shared or scratch storage when
+  home-directory quotas are small.
+- For renv, binary repositories can avoid expensive source builds; otherwise
+  ensure compilers and system libraries are available.
+- On clusters where containers are supported, Apptainer is often the practical
+  outer portability layer.
 
-- uv: `uv lock --exclude-newer 2026-01-01` refuses any package released after
-  that date. Handy for "resolve this the way it would have resolved back then".
+## Re-resolution is a separate reproducibility problem
 
-Combined with a committed lockfile, this makes both the current build and any
-future re-resolution reproducible.
+A committed lockfile preserves the resolution you already have. If you delete
+or regenerate it years later, the set of available packages may have changed.
 
-## Containers are the outermost layer
+uv can constrain fresh resolution by release date, for example:
 
-A lockfile pins packages, but not the operating system, system libraries, or
-compilers. When you need that level of reproducibility (papers, pipelines,
-regulated work), wrap the environment in a container:
+```bash
+uv lock --exclude-newer 2026-01-01
+```
 
-- Put `pixi` or `uv` inside the image and run `pixi install --frozen` or
-  `uv sync --frozen` during the build, so the container is built from your
-  committed lockfile. The lockfile inside the container is what makes it
-  reproducible; a bare `pip install` in a Dockerfile is not.
-- On HPC, prefer Podman (or rootless Docker), or Apptainer (formerly Singularity). It runs without root and is
-  the usual container runtime on shared clusters.
-- This layering is complementary: lockfile for package versions, container for
-  the system around them.
+For long-term archival work, also preserve critical package artifacts or a built
+container image. A lockfile cannot download an upstream artifact that no longer
+exists.
 
-## Migrating between tools
+## Containers are an outer layer, not a replacement for locks
 
-Examples of how to migrate between tools:
+A container captures substantially more userspace state than a package lockfile,
+but it is not literally the whole computer. Containers normally share the host
+kernel and may depend on host CPU/GPU hardware and drivers.
 
-- Conda to pixi: `pixi init --import environment.yml` (see exercise 2).
-- pip to uv: `uv` reads an existing `requirements.txt` (`uv add -r requirements.txt`)
-  and an existing `pyproject.toml`.
-- Capturing pipx tools for a new machine: `pipx list --json > snap.json`, commit
-  it, then `pipx install-all snap.json` elsewhere.
+A strong pattern is:
 
-## Lockfiles are not everything
+```text
+project manifest + lockfile
+        -> strict environment restore
+        -> container image built from pinned inputs
+        -> preserve the built image/digest
+```
 
-Be honest about the limits so people trust the tooling:
+Inside a container build, use the lock rather than performing an unconstrained
+fresh install:
 
-- Lockfiles pin package versions and hashes, not the compiler, kernel, glibc, or
-  GPU driver. Two machines can install the identical locked packages and still
-  behave differently if the system layer differs.
-- For bit-for-bit builds independent of the host, the stronger tools are
-  containers (Apptainer, Docker) and whole-system managers (Nix, GNU Guix).
-- The practical ladder for research: lockfile first (cheap, covers most needs),
-  then a container when results must be portable and archival, then Nix or Guix
-  only if you truly need reproducible builds down to the system libraries.
+```bash
+uv sync --locked
+# or
+pixi install --locked
+```
+
+Also pin the base image by digest for archival work. A Dockerfile using
+`FROM ubuntu:latest` and unpinned network installs is not a deterministic build.
+
+## The tutorial itself intentionally leaves one layer floating
+
+The live Codespace uses floating image/feature/tool installer versions to keep a
+30–40 minute workshop simple. That is deliberate teaching material: after you
+lock the project dependencies, ask what is still unpinned.
+
+Typical answers include:
+
+- the devcontainer base image and features;
+- the uv/Pixi executable versions installed by the workshop;
+- the R version installed by the devcontainer feature;
+- external repositories and upstream artifact availability;
+- the host kernel and hardware.
+
+For a paper, regulated workflow, or archival pipeline, pin those layers too.
+
+## Where package lockfiles stop
+
+Use increasingly strong layers only when your project needs them:
+
+1. project manifest + lockfile;
+2. exact interpreter/runtime where relevant;
+3. explicit supported platforms and CI rebuilds;
+4. container image for the userspace/system layer;
+5. package mirrors/artifact preservation for long-term archival recovery;
+6. Nix/Guix or reproducible-build systems when build inputs themselves must be
+   controlled more deeply.
+
+The practical research rule remains simple: **if the result depends on a
+program, record that program in the project, lock it, and test that the lock can
+be restored from a clean environment.**
