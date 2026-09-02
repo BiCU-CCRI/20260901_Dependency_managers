@@ -1,0 +1,12 @@
+# Environment directories created while running the exercises.
+# Commit the manifests and lockfiles, never these.
+.venv/
+.pixi/
+renv/library/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS junk
+.DS_Store

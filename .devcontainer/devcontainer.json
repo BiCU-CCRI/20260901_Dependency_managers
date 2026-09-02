@@ -1,0 +1,30 @@
+{
+  // Base image is the GitHub Codespaces "universal" image. It already ships
+  // Python, pip, and conda/mamba, so we only need to add R for the renv part.
+   // Note: pin the base image and feature below by digest for a fully
+   // reproducible build. We use floating references here to keep the tutorial short.
+  "name": "new-dependency-managers-tutorial",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  "features": {
+    "ghcr.io/rocker-org/devcontainer-features/r-apt:latest": {
+      "installREnv": true
+    }
+  },
+
+  // Runs once after the container is created. Kept intentionally minimal:
+  // uv, pixi, pipx, and condax are installed by the learner during the
+  // exercises, because installing them is part of the lesson.
+  "postCreateCommand": "echo 'Container ready. Open README.md and start with exercises/01_uv.md'",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "reditorsupport.r"
+      ]
+    }
+  }
+}
