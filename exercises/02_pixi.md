@@ -69,7 +69,7 @@ pixi run samtools --version | head -n 2
 pixi run python -c "import pysam, httpx; print(pysam.__version__, httpx.__version__)"
 ```
 
-`pixi run` executes a command inside the project environment without a separate
+`pixi run` executes a command **inside** the project environment without a separate
 activate step (similar to `uv run`).
 
 ## 4. Add another target platform
@@ -85,12 +85,12 @@ pixi workspace platform list
 ```
 
 > [!NOTE]
-> Run `uname -m` to get your system platform *type*.
+> Run `uname -m` to get your system platform.
 
 Pixi resolves both declared platforms and stores them in the same lockfile. This
 does **not** make an unavailable package magically portable: every dependency
 still needs a compatible build for each declared platform. This is especially
-important for Bioconda on Apple Silicon, where some packages lack native
+important for packages on Apple Silicon, where some packages lack native
 `osx-arm64` builds.
 
 ## 5. Define a reusable task
@@ -98,24 +98,27 @@ important for Bioconda on Apple Silicon, where some packages lack native
 Edit `pixi.toml` and add a task under a `[tasks]` section:
 
 ```bash
-cat >> pixi.toml <<'EOF'
-
 [tasks]
 versions = "samtools --version | head -n 1 && python -c 'import pysam, httpx; print(pysam.__version__, httpx.__version__)'"
-EOF
+```
 
+and then run:
+
+```bash
 pixi run versions
 ```
 
-Tasks are named commands stored in the manifest, so a collaborator can run
+`tasks` are named commands stored in the manifest, so a collaborator can run
 `pixi run versions` without needing to know the exact command. This is a small
 built-in alternative to a Makefile for simple workflows.
 
-## 6. Open an interactive shell (optional)
+## 6. Open an interactive shell
+
+You can also activate pixi environment with `pixi shell` (from within the project directory) and run samtools directly (from anywhere):
 
 ```bash
 pixi shell
-which samtools      # points inside .pixi/envs/default
+samtools --version | head -n 2 # points inside .pixi/envs/default
 exit
 ```
 
@@ -127,7 +130,7 @@ work; use `pixi run` for scripts and pipelines.
 ```bash
 rm -rf .pixi
 pixi install --locked
-pixi run --locked samtools --version | head -n 1
+pixi run --locked samtools --version | head -n 2
 ```
 
 `--locked` makes the command fail if the manifest and `pixi.lock` disagree,
@@ -138,7 +141,7 @@ machine receives identical bytes.
 
 ## 8. Coming from Conda: import an existing environment
 
-If you already have an `environment.yml`, you do not have to start over. This
+If you already have a Conda `environment.yml`, you do not have to start over. This
 repository ships a small one under `exercises/`, so this step is runnable:
 
 ```bash
@@ -146,7 +149,7 @@ cd "$CODESPACE_VSCODE_FOLDER"        # the tutorial repo root in Codespaces
 pixi init /tmp/demo-import --import exercises/environment.yml
 cd /tmp/demo-import
 cat pixi.toml                        # channels and deps came from environment.yml
-pixi run samtools --version | head -n 1
+pixi run samtools --version | head -n 2
 ```
 
 `pixi init --import` converts the Conda spec into a `pixi.toml` manifest and, on the first
@@ -154,9 +157,10 @@ pixi run samtools --version | head -n 1
 records requested constraints; the generated lock records the concrete
 resolution.
 
-Note: if you run this container outside Codespaces, `$CODESPACE_VSCODE_FOLDER`
-will not be set. Just run the `pixi init --import` command from whatever
-directory holds your `environment.yml`.
+> [!NOTE]
+> If you run this container outside Codespaces, `$CODESPACE_VSCODE_FOLDER`
+> will not be set. Just run the `pixi init --import` command from whatever
+> directory holds your `environment.yml`.
 
 ## Takeaways
 
