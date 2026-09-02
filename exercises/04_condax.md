@@ -6,10 +6,10 @@ Conda packages can include much more than Python: compiled C/C++ programs, R sof
 
 For Conda-packaged command-line tools, `pixi global` provides a similar workflow:
 
-- install the tool into an isolated Conda environment;
-- expose its command on your `PATH`;
-- use it without activating that environment;
-- avoid accumulating unrelated application dependencies in a shared Conda environment.
+- install the tool into an isolated Conda environment
+- expose its command on your `PATH`
+- use it without activating that environment
+- avoid accumulating unrelated application dependencies in a shared Conda environment
 
 In 2026, `condax` is only lightly maintained. The actively developed equivalent
 is `pixi global` or `conda-global` from conda-incubator. This
@@ -28,14 +28,14 @@ pixi global install -c conda-forge -c bioconda samtools
 Check that the command is available:
 
 ```bash
-samtools --version | head -n 1
+samtools --version | head -n 2
 ```
 
 `pixi global install` installs the tool into an isolated Conda environment and exposes its executable on your `PATH`, so you can run it without activating the environment.
 
 Because this is a full Conda environment, compiled libraries and other non-Python dependencies are isolated as well.
 
-Inspect your globally available Pixi tools:
+Inspect your globally available pixi tools:
 
 ```bash
 pixi global list
@@ -45,6 +45,12 @@ Remove `samtools` when you are finished:
 
 ```bash
 pixi global uninstall samtools
+```
+
+This will now fail:
+
+```bash
+samtools --version | head -n 2
 ```
 
 ### Why this is preferable to installing tools into Conda `base`
@@ -70,14 +76,22 @@ Install a small command-line tool:
 
 ```bash
 condax install tabulate
+tabulate --version
 ```
 
 The `tabulate` command is now available on your `PATH` from its own Conda environment.
 
-List applications managed by `condax`:
+This version of `condax` does not provide a `list` subcommand. List all Conda
+environments, including those managed by `condax`:
 
 ```bash
-condax list
+conda env list
+```
+
+`condax` doesn't have a nice `list` command like pipx. To list only the applications managed by `condax`, inspect its environment directory:
+
+```bash
+find ~/.condax -mindepth 1 -maxdepth 1 -type d -printf '%f\n'
 ```
 
 Remove the application:
@@ -88,7 +102,7 @@ condax remove tabulate
 
 ### Why `condax` is secondary here
 
-`condax` pioneered this workflow, but development and releases have slowed compared with Pixi.
+`condax` pioneered this workflow, but development and releases have slowed compared with pixi.
 
 You may still encounter `condax` in existing setups, so it is useful to recognise the command and understand what it does. For new installations, prefer `pixi global`.
 
@@ -96,9 +110,31 @@ If you encounter compatibility or solver problems with `condax`, use `pixi globa
 
 ## What about `conda-global`?
 
-`conda-global` is a newer project from `conda-incubator` that provides a similar per-tool environment model for Conda applications.
+[`conda-global`](https://github.com/conda-incubator/conda-global) is a newer project from `conda-incubator` that provides a similar per-tool environment model for Conda applications.
 
-It is actively developed, but as of 2026 it is still an emerging option. For this course, use `pixi global` as the default.
+Install `conda-global` and add to `PATH`:
+
+```bash
+conda install -c conda-forge conda-global -y
+conda global ensurepath
+exec bash            # reload the shell so conda global is on PATH
+```
+
+Install `ruff`:
+
+```bash
+conda global install ruff
+# conda clean -a -y         # Clean Conda cache if you get "The package for ... appears to be corrupted." and rerun the previous line
+ruff --version
+```
+
+List all installed `conda-global` packages:
+
+```bash
+conda global list
+```
+
+It is actively developed, but as of 2026 it is still an emerging option. For now, the recommendation is to use `pixi global` as the default.
 
 ## Takeaways
 

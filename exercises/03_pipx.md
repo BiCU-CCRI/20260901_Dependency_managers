@@ -5,18 +5,21 @@ environment, and puts just the command on your `PATH`. This is the fix for the
 classic problem where `pip install` one tool quietly breaks another by changing
 a shared dependency.
 
-Rough time: 4 minutes.
-
 ## 1. Make sure pipx is available
 
-The Codespaces image usually already has `pipx`. Check, and install it only if
-needed:
+The Codespaces image usually already has `pipx`. Check:
 
 ```bash
-pipx --version || python3 -m pip install --user pipx
-pipx ensurepath
-exec bash            # reload PATH if ensurepath changed it
 pipx --version
+```
+
+Install it **only if needed**:
+
+```bash
+python3 -m pip install --user pipx # install pipx if it isn't installed already
+pipx ensurepath      # run ensurepath if you had to install pipx
+exec bash            # reload PATH if ensurepath changed it
+pipx --version.      # check the installation
 ```
 
 `pipx ensurepath` makes sure the directory pipx links tools into is on your
@@ -25,7 +28,7 @@ pipx --version
 ## 2. Install a tool and run it from anywhere
 
 ```bash
-pipx install cowsay
+pipx install cowsay==6.0          # On purpose not the latest one
 cd /tmp
 cowsay -t "isolated tool on PATH"
 ```
@@ -49,6 +52,13 @@ environment.
 pipx run pycowsay "run once, no install"
 ```
 
+Running `pycowsay` (run with `pipx run`) will fail while `cowsay` (installed via `pipx install`) will work:
+
+```bash
+pycowsay "I will not work"
+cowsay -t "Moo, I work just fine"
+```
+
 `pipx run` builds or reuses a cached environment for the application. The cache
  is retained for later runs and expires after a period of inactivity. Use this for
  something you need occasionally.
@@ -56,8 +66,11 @@ pipx run pycowsay "run once, no install"
 ## 5. Upgrade and remove
 
 ```bash
+pipx list | grep cowsay
 pipx upgrade cowsay
+pipx list | grep cowsay
 pipx uninstall cowsay
+cowsay "Now I don't work either"
 ```
 
 Removal is clean: the tool's whole environment and its command go away, with no
