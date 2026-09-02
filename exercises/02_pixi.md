@@ -1,13 +1,11 @@
 # Exercise 2: pixi, project-first Conda environments
 
 `pixi` uses the Conda package ecosystem (`conda-forge`, `bioconda`, and other
-channels), so it can install compiled bioinformatics tools and system libraries,
+channels) to can install compiled bioinformatics tools and system libraries,
 not just Python packages. It maintains a lockfile and
 does not depend on a mutable `base` environment. In this exercise you will build
 a project that mixes Conda and PyPI dependencies, add a second target platform,
 and reproduce the environment from the lockfile.
-
-Rough time: 8 minutes.
 
 ## 1. Install pixi
 
@@ -17,10 +15,13 @@ exec bash            # reload the shell so pixi is on PATH
 pixi --version
 ```
 
-Why `exec bash`: the installer adds `~/.pixi/bin` to your shell config. Starting
-a fresh shell picks it up. Expected: a version string like `pixi 0.x.y`.
+Expected: a version string like `pixi 0.78.0` or newer. 
 
 > [!NOTE]
+> Why `exec bash`: the installer adds `~/.pixi/bin` to your shell config. Starting
+> a fresh shell picks it up.
+
+> [!IMPORTANT]
 > For a long-lived CI or archival workflow, pin the pixi version rather than
 > installing whatever happens to be latest. The floating installer is used here
 > to keep the live exercise short.
