@@ -4,7 +4,9 @@
   // Note: pin ":2" (and the feature tags below) to a digest for a fully
   // reproducible build. We use floating tags here to keep the tutorial short.
   "name": "new-dependency-managers-tutorial",
-  "image": "mcr.microsoft.com/devcontainers/universal:6-noble",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
 
   "features": {
     "ghcr.io/rocker-org/devcontainer-features/r-apt:latest": {
