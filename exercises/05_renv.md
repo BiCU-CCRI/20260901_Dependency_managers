@@ -8,8 +8,6 @@ counterpart to `uv.lock` or `pixi.lock`. The whole workflow is three functions:
 `renv` is pre-installed in this Codespace (see `.devcontainer/devcontainer.json`),
 and R here is configured to install fast binary packages.
 
-Rough time: 6 minutes.
-
 ## 1. Create a project and initialise renv
 
 ```bash
@@ -63,14 +61,13 @@ into `renv.lock`. Confirm `glue` is recorded:
 grep -A2 '"glue"' renv.lock
 ```
 
-This lockfile is the reproducible record. Commit it to git.
-
 ## 4. Reproduce the environment from the lockfile
 
 This is what a collaborator does after cloning:
 
 ```bash
 rm -rf renv/library
+Rscript analysis.R                      # This will fail
 R -q -e 'renv::restore(prompt = FALSE)'
 Rscript analysis.R
 ```
@@ -80,12 +77,34 @@ rebuilding the project library. The script runs again with the same versions.
 
 ## 5. Installing from Bioconductor or GitHub (reference)
 
+> [!WARNING]
+> These take a lot longer (especially DESeq2) to install because they are compiled from the source!
+
+The supplied dev container includes the BLAS, LAPACK, and Fortran development
+libraries required by some compiled R packages. Outside this container, install
+the equivalent system dependencies before continuing.
+
 renv is not limited to CRAN, which matters for bioinformatics:
 
 ```bash
-# Examples only, these take longer so skip in the live session:
-# R -q -e 'renv::install("bioc::DESeq2")'      # from Bioconductor
-# R -q -e 'renv::install("tidyverse/dplyr")'   # from GitHub
+R -q -e 'renv::install("bioc::DESeq2")'      # from Bioconductor
+R -q -e 'renv::install("tidyverse/dplyr")'   # from GitHub
+# R -q -e 'renv::snapshot(packages = c("DESeq2", "dplyr"))'
+```
+
+Check that they're installed - this wont work even with `renv::snapshot()` because there's no script using either `DESeq2` or `dplyr`:
+
+```bash
+R -q -e 'renv::snapshot()'
+grep -E -A4 '"(DESeq2|dplyr)":' renv.lock
+```
+
+This will now work because renv recognizes the dependencies:
+
+```bash
+echo 'library(DESeq2); library(dplyr); print(glue("renv still works: {2 + 2}"))' >> analysis.R
+R -q -e 'renv::snapshot()'
+grep -E -A4 '"(DESeq2|dplyr)":' renv.lock
 ```
 
 Whatever the source, `renv::snapshot()` pins it in `renv.lock`.
