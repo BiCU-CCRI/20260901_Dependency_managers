@@ -1,8 +1,7 @@
 # Modern dependency managers, a hands-on tour
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/BiCU-CCRI/20260901_Dependency_managers)
-
-A short tutorial that introduces modern dependency and environment managers with a focus on **reproducibility and portability**. It runs entirely in a GitHub Codespace, so there is nothing to install on your own machine.
+A short tutorial that introduces modern dependency and environment managers with a focus on **reproducibility and portability**.
+It runs entirely in a GitHub Codespace, so there is nothing to install on your own machine.
 
 Tools covered, with hands-on exercises:
 
@@ -13,6 +12,23 @@ Tools covered, with hands-on exercises:
 - `renv` (reproducible R environments)
 
 Other tools worth knowing are listed near the end of this file.
+
+## Running this tutorial
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/BiCU-CCRI/20260901_Dependency_managers)
+
+1. Open this repository in a GitHub Codespace using the badge above, or choose
+   **Code -> Codespaces -> Create codespace on this branch**. The first build
+   takes a few minutes because it installs R and renv.
+2. Open the exercises in order under `exercises/`. Each is a short Markdown file
+   with copy-paste commands and expected behavior.
+
+> [!IMPORTANT]
+> The tutorial container and installer commands **intentionally** use some **floating**
+> **tool/image versions** to keep the live session simple. That is a useful boundary
+> of the demo: a project lockfile does not automatically pin the devcontainer,
+> package-manager executable, OS kernel, or external repositories. See
+> `reproducibility.md` for the stronger archival setup.
 
 ## Why bother, if Conda and virtualenv already work?
 
@@ -266,21 +282,6 @@ The key rule is:
 - `pip`: <https://pip.pypa.io/en/stable/>
 - `venv`: <https://docs.python.org/3/library/venv.html>
 - `virtualenv`: <https://virtualenv.pypa.io/>
-
-## Running this tutorial
-
-1. Open this repository in a GitHub Codespace using the badge above, or choose
-   **Code -> Codespaces -> Create codespace on this branch**. The first build
-   takes a few minutes because it installs R and renv.
-2. Open the exercises in order under `exercises/`. Each is a short Markdown file
-   with copy-paste commands and expected behavior.
-
-> [!IMPORTANT]
-> The tutorial container and installer commands intentionally use some floating
-> tool/image versions to keep the live session simple. That is a useful boundary
-> of the demo: a project lockfile does not automatically pin the devcontainer,
-> package-manager executable, OS kernel, or external repositories. See
-> `reproducibility.md` for the stronger archival setup.
 
 ## Supporting material
 

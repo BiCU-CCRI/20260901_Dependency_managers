@@ -4,18 +4,11 @@
   // Note: pin ":2" (and the feature tags below) to a digest for a fully
   // reproducible build. We use floating tags here to keep the tutorial short.
   "name": "new-dependency-managers-tutorial",
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "image": "mcr.microsoft.com/devcontainers/universal:6-noble",
 
   "features": {
-    // Installs the latest R from apt and configures binary package installs
-    // (via Posit Public Package Manager), so renv::restore() is fast.
-    "ghcr.io/rocker-org/devcontainer-features/r-apt:latest": {},
-
-    // Pre-installs renv itself so learners can skip the install step live.
-    // "installSystemRequirements" pulls any needed system libraries.
-    "ghcr.io/rocker-org/devcontainer-features/r-packages:1": {
-      "packages": "renv",
-      "installSystemRequirements": true
+    "ghcr.io/rocker-org/devcontainer-features/r-apt:latest": {
+      "installREnv": true
     }
   },
 
