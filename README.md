@@ -171,7 +171,7 @@ For comparison, the traditional tools are:
   non-Python tools from `conda-forge`, `bioconda`, and other Conda channels into isolated environments and expose their commands on `PATH`. `pixi-global.toml` records the configured global environments.
 - **Cons**: the global manifest is not a project `pixi.lock`, and each global
   environment is resolved for one platform. Research-critical tools should be
-  project dependencies instead rather than installed with `pixi global`.
+  project dependencies rather than installed with `pixi global`.
 
 ### `condax`
 

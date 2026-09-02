@@ -19,7 +19,7 @@ Install it **only if needed**:
 python3 -m pip install --user pipx # install pipx if it isn't installed already
 pipx ensurepath      # run ensurepath if you had to install pipx
 exec bash            # reload PATH if ensurepath changed it
-pipx --version.      # check the installation
+pipx --version       # check the installation
 ```
 
 `pipx ensurepath` makes sure the directory pipx links tools into is on your

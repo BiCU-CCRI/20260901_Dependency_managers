@@ -1,7 +1,7 @@
 # Exercise 2: pixi, project-first Conda environments
 
 `pixi` uses the Conda package ecosystem (`conda-forge`, `bioconda`, and other
-channels) to can install compiled bioinformatics tools and system libraries,
+channels) can install compiled bioinformatics tools and system libraries,
 not just Python packages. It maintains a lockfile and
 does not depend on a mutable `base` environment. In this exercise you will build
 a project that mixes Conda and PyPI dependencies, add a second target platform,
@@ -15,7 +15,7 @@ exec bash            # reload the shell so pixi is on PATH
 pixi --version
 ```
 
-Expected: a version string like `pixi 0.78.0` or newer. 
+Expected: a version string like `pixi 0.78.0` or newer.
 
 > [!NOTE]
 > Why `exec bash`: the installer adds `~/.pixi/bin` to your shell config. Starting
@@ -49,7 +49,7 @@ pixi add samtools "python>=3.11" pysam
 
 This installs `samtools` (a compiled program), Python, and the Conda build of
 `pysam` into one project environment. The dependencies are resolved together.
-`conda` can do this too, but slowly; `pixi` resolves in parallel in Rust and
+`conda` can resolve the same environment with its default libmamba solver; `pixi` resolves in parallel in Rust and
 writes `pixi.lock` at the same time.
 
 Now deliberately add a package from PyPI:

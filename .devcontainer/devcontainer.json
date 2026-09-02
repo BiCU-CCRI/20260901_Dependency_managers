@@ -1,8 +1,8 @@
 {
   // Base image is the GitHub Codespaces "universal" image. It already ships
   // Python, pip, and conda/mamba, so we only need to add R for the renv part.
-  // Note: pin ":2" (and the feature tags below) to a digest for a fully
-  // reproducible build. We use floating tags here to keep the tutorial short.
+   // Note: pin the base image and feature below by digest for a fully
+   // reproducible build. We use floating references here to keep the tutorial short.
   "name": "new-dependency-managers-tutorial",
   "build": {
     "dockerfile": "Dockerfile"

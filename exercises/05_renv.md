@@ -78,7 +78,7 @@ rebuilding the project library. The script runs again with the same versions.
 ## 5. Installing from Bioconductor or GitHub (reference)
 
 > [!WARNING]
-> These take a lot longer (especially DESeq2) to install because they are compiled from the source!
+> These take a lot longer (especially DESeq2) to install because they are compiled from source!
 
 The supplied dev container includes the BLAS, LAPACK, and Fortran development
 libraries required by some compiled R packages. Outside this container, install
@@ -92,7 +92,7 @@ R -q -e 'renv::install("tidyverse/dplyr")'   # from GitHub
 # R -q -e 'renv::snapshot(packages = c("DESeq2", "dplyr"))'
 ```
 
-Check that they're installed - this wont work even with `renv::snapshot()` because there's no script using either `DESeq2` or `dplyr`:
+Check that they're installed - this won't work even with `renv::snapshot()` because there's no script using either `DESeq2` or `dplyr`:
 
 ```bash
 R -q -e 'renv::snapshot()'
