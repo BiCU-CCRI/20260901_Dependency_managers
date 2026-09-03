@@ -30,6 +30,10 @@ Other tools worth knowing are listed near the end of this file.
 > package-manager executable, OS kernel, or external repositories. See
 > `reproducibility.md` for the stronger archival setup.
 
+## Overview
+
+You can find a summary overview in [docs/Dependency_managers_overview.pdf](./docs/Dependency_managers_overview.pdf).
+
 ## Why bother, if Conda and virtualenv already work?
 
 They do work, but they have well-known pain points that the newer tools were
